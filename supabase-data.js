@@ -94,6 +94,34 @@ async function deleteRow(table, id, afterDelete) {
   afterDelete();
 }
 
+function addAdminButton(text, onClick, extraClass = "") {
+  const button = document.createElement("button");
+  button.className = `delete-button admin-only ${extraClass}`.trim();
+  button.type = "button";
+  button.textContent = text;
+  button.onclick = onClick;
+  return button;
+}
+
+function scrollToForm(form) {
+  form.closest(".card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function ensureCancelEditButton(form, onCancel) {
+  let button = form.querySelector(".cancel-edit-button");
+
+  if (!button) {
+    button = document.createElement("button");
+    button.type = "button";
+    button.className = "cancel-edit-button";
+    button.textContent = "cancelar edición";
+    button.onclick = onCancel;
+    form.appendChild(button);
+  }
+
+  return button;
+}
+
 async function initFilosofia() {
   const form = document.getElementById("diary-form");
   const container = document.getElementById("entries");
@@ -105,7 +133,17 @@ async function initFilosofia() {
   const dateInput = document.getElementById("date");
   const titleInput = document.getElementById("title");
   const textInput = document.getElementById("text");
+  let editingEntry = null;
   dateInput.valueAsDate = new Date();
+
+  const cancelEditButton = ensureCancelEditButton(form, () => {
+    editingEntry = null;
+    form.reset();
+    dateInput.valueAsDate = new Date();
+    cancelEditButton.style.display = "none";
+    setFormStatus(form, "");
+  });
+  cancelEditButton.style.display = "none";
 
   async function showEntries() {
     showMessage(container, "cargando entradas...");
@@ -145,8 +183,19 @@ async function initFilosofia() {
       button.textContent = "borrar";
       button.onclick = () => deleteRow("filosofia_entries", entry.id, showEntries);
 
+      const editButton = addAdminButton("editar", () => {
+        editingEntry = entry;
+        dateInput.value = entry.entry_date;
+        titleInput.value = entry.title;
+        textInput.value = entry.body;
+        cancelEditButton.style.display = "inline-block";
+        setFormStatus(form, "editando entrada.");
+        scrollToForm(form);
+      });
+
       article.appendChild(meta);
       article.appendChild(text);
+      article.appendChild(editButton);
       article.appendChild(button);
       container.appendChild(article);
     });
@@ -163,17 +212,24 @@ async function initFilosofia() {
       return;
     }
 
-    const { error } = await supabaseClient.from("filosofia_entries").insert({
+    const payload = {
       entry_date: dateInput.value,
       title: titleInput.value,
       body: textInput.value
-    });
+    };
+
+    const query = editingEntry
+      ? supabaseClient.from("filosofia_entries").update(payload).eq("id", editingEntry.id)
+      : supabaseClient.from("filosofia_entries").insert(payload);
+    const { error } = await query;
 
     if (error) {
       alert("No se ha podido guardar: " + error.message);
       return;
     }
 
+    editingEntry = null;
+    cancelEditButton.style.display = "none";
     titleInput.value = "";
     textInput.value = "";
     showEntries();
@@ -196,7 +252,17 @@ async function initRecomendaciones() {
   const ratingInput = document.getElementById("rating");
   const photoInput = document.getElementById("photo");
   const textInput = document.getElementById("text");
+  let editingReview = null;
   dateInput.valueAsDate = new Date();
+
+  const cancelEditButton = ensureCancelEditButton(form, () => {
+    editingReview = null;
+    form.reset();
+    dateInput.valueAsDate = new Date();
+    cancelEditButton.style.display = "none";
+    setFormStatus(form, "");
+  });
+  cancelEditButton.style.display = "none";
 
   async function showReviews() {
     showMessage(container, "cargando recomendaciones...");
@@ -251,10 +317,23 @@ async function initRecomendaciones() {
       button.textContent = "borrar";
       button.onclick = () => deleteRow("recommendation_entries", review.id, showReviews);
 
+      const editButton = addAdminButton("editar", () => {
+        editingReview = review;
+        dateInput.value = review.entry_date;
+        categoryInput.value = review.category;
+        titleInput.value = review.title;
+        ratingInput.value = review.rating;
+        textInput.value = review.body;
+        cancelEditButton.style.display = "inline-block";
+        setFormStatus(form, "editando recomendación. Elige foto solo si quieres cambiarla.");
+        scrollToForm(form);
+      });
+
       article.appendChild(meta);
       article.appendChild(title);
       article.appendChild(rating);
       article.appendChild(text);
+      article.appendChild(editButton);
       article.appendChild(button);
       container.appendChild(article);
     });
@@ -271,21 +350,30 @@ async function initRecomendaciones() {
       return;
     }
 
-    const photoData = await readPhotoAsBase64(photoInput.files[0]);
-    const { error } = await supabaseClient.from("recommendation_entries").insert({
+    const photoData = photoInput.files[0]
+      ? await readPhotoAsBase64(photoInput.files[0])
+      : editingReview?.photo_data || "";
+    const payload = {
       entry_date: dateInput.value,
       category: categoryInput.value,
       title: titleInput.value,
       rating: ratingInput.value,
       photo_data: photoData,
       body: textInput.value
-    });
+    };
+
+    const query = editingReview
+      ? supabaseClient.from("recommendation_entries").update(payload).eq("id", editingReview.id)
+      : supabaseClient.from("recommendation_entries").insert(payload);
+    const { error } = await query;
 
     if (error) {
       alert("No se ha podido guardar: " + error.message);
       return;
     }
 
+    editingReview = null;
+    cancelEditButton.style.display = "none";
     form.reset();
     dateInput.valueAsDate = new Date();
     showReviews();
@@ -301,6 +389,15 @@ async function initTodo() {
   if (!form || !container) {
     return;
   }
+
+  let editingTask = null;
+  const cancelEditButton = ensureCancelEditButton(form, () => {
+    editingTask = null;
+    form.reset();
+    cancelEditButton.style.display = "none";
+    setFormStatus(form, "");
+  });
+  cancelEditButton.style.display = "none";
 
   async function showTasks() {
     showMessage(container, "cargando tareas...");
@@ -358,6 +455,21 @@ async function initTodo() {
       deleteButton.textContent = "borrar";
       deleteButton.onclick = () => deleteRow("web_todo_tasks", task.id, showTasks);
 
+      const editButton = document.createElement("button");
+      editButton.className = "todo-button admin-only";
+      editButton.type = "button";
+      editButton.textContent = "editar";
+      editButton.onclick = () => {
+        editingTask = task;
+        document.getElementById("task").value = task.body;
+        document.getElementById("category").value = task.category;
+        document.getElementById("priority").value = task.priority;
+        cancelEditButton.style.display = "inline-block";
+        setFormStatus(form, "editando tarea.");
+        scrollToForm(form);
+      };
+
+      buttons.appendChild(editButton);
       buttons.appendChild(doneButton);
       buttons.appendChild(deleteButton);
       article.appendChild(topLine);
@@ -378,18 +490,24 @@ async function initTodo() {
       return;
     }
 
-    const { error } = await supabaseClient.from("web_todo_tasks").insert({
+    const payload = {
       body: document.getElementById("task").value,
       category: document.getElementById("category").value,
       priority: document.getElementById("priority").value,
-      done: false
-    });
+      done: editingTask ? editingTask.done : false
+    };
+    const query = editingTask
+      ? supabaseClient.from("web_todo_tasks").update(payload).eq("id", editingTask.id)
+      : supabaseClient.from("web_todo_tasks").insert(payload);
+    const { error } = await query;
 
     if (error) {
       alert("No se ha podido guardar: " + error.message);
       return;
     }
 
+    editingTask = null;
+    cancelEditButton.style.display = "none";
     form.reset();
     showTasks();
   });
@@ -414,6 +532,23 @@ async function initBookItems(config) {
     return;
   }
 
+  let editingItem = null;
+  const cancelEditButton = ensureCancelEditButton(form, () => {
+    editingItem = null;
+    form.reset();
+    cancelEditButton.style.display = "none";
+    setFormStatus(form, "");
+  });
+  cancelEditButton.style.display = "none";
+
+  function startEdit(item) {
+    editingItem = item;
+    config.fillForm(item);
+    cancelEditButton.style.display = "inline-block";
+    setFormStatus(form, "editando.");
+    scrollToForm(form);
+  }
+
   async function showItems() {
     showMessage(container, "cargando...");
 
@@ -436,7 +571,7 @@ async function initBookItems(config) {
     }
 
     data.forEach(item => {
-      container.appendChild(config.render(item, prettyBook, showItems));
+      container.appendChild(config.render(item, prettyBook, showItems, startEdit));
     });
 
     window.applyAdminVisibility();
@@ -454,14 +589,19 @@ async function initBookItems(config) {
         return;
       }
 
-      const payload = await config.payload(book);
-      const { error } = await supabaseClient.from(config.table).insert(payload);
+      const payload = await config.payload(book, editingItem);
+      const query = editingItem
+        ? supabaseClient.from(config.table).update(payload).eq("id", editingItem.id)
+        : supabaseClient.from(config.table).insert(payload);
+      const { error } = await query;
 
       if (error) {
         setFormStatus(form, "No se ha podido guardar: " + error.message);
         return;
       }
 
+      editingItem = null;
+      cancelEditButton.style.display = "none";
       form.reset();
       setFormStatus(form, "guardado.");
       showItems();
@@ -494,6 +634,8 @@ async function initWorldPage() {
   const prettyBook = book.replaceAll("-", " ");
   const title = document.getElementById("book-title");
   let selectedKingdom = null;
+  let editingKingdom = null;
+  let editingPlace = null;
 
   if (title) {
     title.textContent = prettyBook;
@@ -599,6 +741,62 @@ async function initWorldPage() {
 
   if (backToKingdoms) {
     backToKingdoms.addEventListener("click", showWorldIndex);
+  }
+
+  const cancelKingdomEditButton = kingdomForm ? ensureCancelEditButton(kingdomForm, () => {
+    editingKingdom = null;
+    kingdomForm.reset();
+    cancelKingdomEditButton.style.display = "none";
+    setFormStatus(kingdomForm, "");
+  }) : null;
+  if (cancelKingdomEditButton) {
+    cancelKingdomEditButton.style.display = "none";
+  }
+
+  const cancelPlaceEditButton = placeForm ? ensureCancelEditButton(placeForm, () => {
+    editingPlace = null;
+    placeForm.reset();
+    if (selectedKingdom) {
+      document.getElementById("placeKingdom").value = selectedKingdom.name;
+    }
+    cancelPlaceEditButton.style.display = "none";
+    setFormStatus(placeForm, "");
+  }) : null;
+  if (cancelPlaceEditButton) {
+    cancelPlaceEditButton.style.display = "none";
+  }
+
+  function editKingdom(item) {
+    editingKingdom = item;
+    document.getElementById("kingdomName").value = item.name || "";
+    document.getElementById("kingdomOrder").value = item.display_order || "";
+    document.getElementById("capital").value = item.capital || "";
+    document.getElementById("languages").value = item.languages || "";
+    document.getElementById("culture").value = item.culture || "";
+    document.getElementById("religion").value = item.religion || "";
+    document.getElementById("history").value = item.history || "";
+    document.getElementById("government").value = item.government || "";
+    document.getElementById("kingdomType").value = item.kingdom_type || "";
+    document.getElementById("alliances").value = item.alliances || "";
+    document.getElementById("enemies").value = item.enemies || "";
+    document.getElementById("exploredInBook").value = item.explored_in_book || "";
+    document.getElementById("kingdomExtra").value = item.extra_info || "";
+    cancelKingdomEditButton.style.display = "inline-block";
+    setFormStatus(kingdomForm, "editando reino. Elige bandera o mapa solo si quieres cambiarlos.");
+    scrollToForm(kingdomForm);
+  }
+
+  function editPlace(item) {
+    editingPlace = item;
+    document.getElementById("placeName").value = item.name || "";
+    document.getElementById("placeKingdom").value = item.kingdom_name || selectedKingdom?.name || "";
+    document.getElementById("placeBook").value = item.book_name || "";
+    document.getElementById("placeType").value = item.place_type || "";
+    document.getElementById("placeImportance").value = item.importance || "";
+    document.getElementById("placeExtra").value = item.notes || "";
+    cancelPlaceEditButton.style.display = "inline-block";
+    setFormStatus(placeForm, "editando lugar. Elige foto solo si quieres cambiarla.");
+    scrollToForm(placeForm);
   }
 
   async function showGeneralMap() {
@@ -737,7 +935,10 @@ async function initWorldPage() {
       button.textContent = "borrar";
       button.onclick = () => deleteRow("book_kingdoms", item.id, showKingdoms);
 
+      const editButton = addAdminButton("editar", () => editKingdom(item));
+
       article.appendChild(openButton);
+      article.appendChild(editButton);
       article.appendChild(button);
       kingdomsContainer.appendChild(article);
     });
@@ -777,7 +978,7 @@ async function initWorldPage() {
     }
 
     data.forEach(item => {
-      placesContainer.appendChild(renderPlace(item, prettyBook, showPlaces));
+      placesContainer.appendChild(renderPlace(item, prettyBook, showPlaces, editPlace));
     });
 
     window.applyAdminVisibility();
@@ -797,12 +998,18 @@ async function initWorldPage() {
         }
 
         const orderValue = document.getElementById("kingdomOrder").value;
-        const { error } = await supabaseClient.from("book_kingdoms").insert({
+        const flagData = document.getElementById("flag").files[0]
+          ? await readPhotoAsCompressedBase64(document.getElementById("flag").files[0])
+          : editingKingdom?.flag_data || "";
+        const mapData = document.getElementById("map").files[0]
+          ? await readPhotoAsCompressedBase64(document.getElementById("map").files[0])
+          : editingKingdom?.map_data || "";
+        const payload = {
           book_slug: book,
           name: document.getElementById("kingdomName").value,
           display_order: orderValue ? Number(orderValue) : null,
-          flag_data: await readPhotoAsCompressedBase64(document.getElementById("flag").files[0]),
-          map_data: await readPhotoAsCompressedBase64(document.getElementById("map").files[0]),
+          flag_data: flagData,
+          map_data: mapData,
           capital: document.getElementById("capital").value,
           languages: document.getElementById("languages").value,
           culture: document.getElementById("culture").value,
@@ -814,14 +1021,20 @@ async function initWorldPage() {
           enemies: document.getElementById("enemies").value,
           explored_in_book: document.getElementById("exploredInBook").value,
           extra_info: document.getElementById("kingdomExtra").value
-        });
+        };
+        const query = editingKingdom
+          ? supabaseClient.from("book_kingdoms").update(payload).eq("id", editingKingdom.id)
+          : supabaseClient.from("book_kingdoms").insert(payload);
+        const { error } = await query;
 
         if (error) {
           setFormStatus(kingdomForm, "No se ha podido guardar: " + error.message);
           return;
         }
 
+        editingKingdom = null;
         kingdomForm.reset();
+        cancelKingdomEditButton.style.display = "none";
         setFormStatus(kingdomForm, "guardado.");
         showKingdoms();
       } catch (error) {
@@ -850,7 +1063,10 @@ async function initWorldPage() {
 
         const extraInfo = document.getElementById("placeExtra").value;
         const importance = document.getElementById("placeImportance").value;
-        const { error } = await supabaseClient.from("book_places").insert({
+        const photoData = document.getElementById("placePhoto").files[0]
+          ? await readPhotoAsCompressedBase64(document.getElementById("placePhoto").files[0])
+          : editingPlace?.photo_data || "";
+        const payload = {
           book_slug: book,
           name: document.getElementById("placeName").value,
           book_name: document.getElementById("placeBook").value,
@@ -859,15 +1075,21 @@ async function initWorldPage() {
           importance: importance,
           notes: extraInfo,
           description: extraInfo || importance || "-",
-          photo_data: await readPhotoAsCompressedBase64(document.getElementById("placePhoto").files[0])
-        });
+          photo_data: photoData
+        };
+        const query = editingPlace
+          ? supabaseClient.from("book_places").update(payload).eq("id", editingPlace.id)
+          : supabaseClient.from("book_places").insert(payload);
+        const { error } = await query;
 
         if (error) {
           setFormStatus(placeForm, "No se ha podido guardar: " + error.message);
           return;
         }
 
+        editingPlace = null;
         placeForm.reset();
+        cancelPlaceEditButton.style.display = "none";
         document.getElementById("placeKingdom").value = selectedKingdom.name;
         setFormStatus(placeForm, "guardado.");
         showPlaces();
@@ -889,7 +1111,7 @@ function textBlock(parts) {
     .join("\n\n");
 }
 
-function renderCharacter(item, prettyBook, refresh) {
+function renderCharacter(item, prettyBook, refresh, startEdit) {
   const article = document.createElement("article");
   article.className = "review-entry";
 
@@ -936,6 +1158,8 @@ function renderCharacter(item, prettyBook, refresh) {
   button.textContent = "borrar";
   button.onclick = () => deleteRow("book_characters", item.id, refresh);
 
+  const editButton = addAdminButton("editar", () => startEdit(item));
+
   article.appendChild(title);
   if (meta.textContent) {
     article.appendChild(meta);
@@ -943,11 +1167,12 @@ function renderCharacter(item, prettyBook, refresh) {
   if (text.textContent) {
     article.appendChild(text);
   }
+  article.appendChild(editButton);
   article.appendChild(button);
   return article;
 }
 
-function renderPlace(item, prettyBook, refresh) {
+function renderPlace(item, prettyBook, refresh, startEdit) {
   const article = document.createElement("article");
   article.className = "review-entry";
 
@@ -982,6 +1207,8 @@ function renderPlace(item, prettyBook, refresh) {
   button.textContent = "borrar";
   button.onclick = () => deleteRow("book_places", item.id, refresh);
 
+  const editButton = startEdit ? addAdminButton("editar", () => startEdit(item)) : null;
+
   article.appendChild(title);
   if (meta.textContent) {
     article.appendChild(meta);
@@ -993,7 +1220,7 @@ function renderPlace(item, prettyBook, refresh) {
   return article;
 }
 
-function renderSynopsis(item, prettyBook, refresh) {
+function renderSynopsis(item, prettyBook, refresh, startEdit) {
   const article = document.createElement("article");
   article.className = "review-entry";
 
@@ -1013,9 +1240,15 @@ function renderSynopsis(item, prettyBook, refresh) {
   button.textContent = "borrar";
   button.onclick = () => deleteRow("book_synopsis", item.id, refresh);
 
+  const editButton = addAdminButton("editar", () => startEdit(item));
+
   article.appendChild(meta);
   article.appendChild(title);
   article.appendChild(text);
+  article.appendChild(editButton);
+  if (editButton) {
+    article.appendChild(editButton);
+  }
   article.appendChild(button);
   return article;
 }
@@ -1031,7 +1264,26 @@ document.addEventListener("DOMContentLoaded", () => {
     containerId: "characters",
     table: "book_characters",
     emptyText: "Todavía no hay personajes.",
-    payload: async book => ({
+    fillForm: item => {
+      document.getElementById("name").value = item.name || "";
+      document.getElementById("birth").value = item.birth || "";
+      document.getElementById("nickname").value = item.nickname || "";
+      document.getElementById("role").value = item.role_in_story || "";
+      document.getElementById("mbti").value = item.mbti || "";
+      document.getElementById("likes").value = item.likes || "";
+      document.getElementById("color").value = item.favorite_color || "";
+      document.getElementById("food").value = item.favorite_food || "";
+      document.getElementById("pet").value = item.pet || "";
+      document.getElementById("hates").value = item.hates || "";
+      document.getElementById("talents").value = item.talents || "";
+      document.getElementById("weaknesses").value = item.weaknesses || "";
+      document.getElementById("fear").value = item.fear || "";
+      document.getElementById("dream").value = item.dream || "";
+      document.getElementById("secret").value = item.secret || "";
+      document.getElementById("quote").value = item.quote || "";
+      document.getElementById("description").value = item.description || "";
+    },
+    payload: async (book, editingItem) => ({
       book_slug: book,
       name: document.getElementById("name").value,
       birth: document.getElementById("birth").value,
@@ -1050,7 +1302,9 @@ document.addEventListener("DOMContentLoaded", () => {
       secret: document.getElementById("secret").value,
       quote: document.getElementById("quote").value,
       description: document.getElementById("description").value,
-      photo_data: await readPhotoAsCompressedBase64(document.getElementById("photo").files[0])
+      photo_data: document.getElementById("photo").files[0]
+        ? await readPhotoAsCompressedBase64(document.getElementById("photo").files[0])
+        : editingItem?.photo_data || ""
     }),
     render: renderCharacter
   });
@@ -1061,6 +1315,11 @@ document.addEventListener("DOMContentLoaded", () => {
     containerId: "synopsis-list",
     table: "book_synopsis",
     emptyText: "Todavía no hay información guardada.",
+    fillForm: item => {
+      document.getElementById("title").value = item.title || "";
+      document.getElementById("type").value = item.type || "";
+      document.getElementById("text").value = item.body || "";
+    },
     payload: async book => ({
       book_slug: book,
       title: document.getElementById("title").value,

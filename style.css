@@ -423,6 +423,22 @@ footer {
   background: rgba(123, 101, 136, 0.85);
 }
 
+.cancel-edit-button {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  padding: 9px 15px;
+  border: 1px solid rgba(120, 140, 160, 0.28);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  color: #5b7290;
+  cursor: pointer;
+}
+
+.cancel-edit-button:hover {
+  color: #8d5f7d;
+  background: rgba(255, 255, 255, 0.78);
+}
+
 .review-entry {
   margin-bottom: 24px;
   padding: 22px;
