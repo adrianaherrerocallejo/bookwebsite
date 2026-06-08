@@ -188,6 +188,38 @@ footer {
   line-height: 1.7;
 }
 
+.intro-card {
+  margin-bottom: 32px;
+}
+
+.book-grid,
+.book-section-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.book-card {
+  min-height: 280px;
+}
+
+.book-intro {
+  margin-bottom: 34px;
+}
+
+.book-intro a,
+.secondary-card a,
+.intro-card a {
+  color: #5b7290;
+  font-style: italic;
+  text-decoration: none;
+}
+
+.book-intro a:hover,
+.secondary-card a:hover,
+.intro-card a:hover {
+  color: #8d5f7d;
+  text-decoration: underline;
+}
+
 @media (max-width: 900px) {
   .home-grid {
     grid-template-columns: repeat(2, 1fr);
