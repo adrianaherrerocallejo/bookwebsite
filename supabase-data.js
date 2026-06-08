@@ -644,29 +644,27 @@ async function initWorldPage() {
       openButton.type = "button";
       openButton.onclick = () => showKingdomDetail(item);
 
-      if (item.flag_data) {
-        const flag = document.createElement("img");
-        flag.className = "kingdom-list-flag";
-        flag.src = item.flag_data;
-        flag.alt = `bandera de ${item.name}`;
-        openButton.appendChild(flag);
-      }
+      const number = document.createElement("span");
+      number.textContent = item.display_order || "";
+
+      const content = document.createElement("div");
 
       const heading = document.createElement("h3");
-      heading.textContent = item.display_order ? `${item.display_order}. ${item.name}` : item.name;
+      heading.textContent = item.name;
 
       const meta = document.createElement("p");
-      meta.className = "review-meta";
       meta.textContent = [
         item.capital ? `capital: ${item.capital}` : "",
         item.languages ? `idioma/s: ${item.languages}` : "",
         item.explored_in_book ? `explorado en: ${item.explored_in_book}` : ""
       ].filter(Boolean).join(" · ");
 
-      openButton.appendChild(heading);
+      content.appendChild(heading);
       if (meta.textContent) {
-        openButton.appendChild(meta);
+        content.appendChild(meta);
       }
+      openButton.appendChild(number);
+      openButton.appendChild(content);
 
       const button = document.createElement("button");
       button.className = "delete-button admin-only";
