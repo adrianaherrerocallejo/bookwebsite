@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sinopsis | descifrAndo munDos</title>
+    <link href="../style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+
+  <body class="libros-page">
+    <header>
+      <h1>sinopsis e info</h1>
+      <p class="subtitle" id="book-title">mis libros</p>
+      <p class="intro">resumen, notas, temas e información importante</p>
+    </header>
+
+    <div id="menu"></div>
+
+    <main>
+      <section class="card admin-only">
+        <h2>nueva nota</h2>
+
+        <form id="synopsis-form" class="review-form">
+          <label for="title">título</label>
+          <input type="text" id="title" placeholder="Ej: sinopsis principal" required>
+
+          <label for="type">tipo</label>
+          <select id="type">
+            <option value="sinopsis">sinopsis</option>
+            <option value="info extra">info extra</option>
+            <option value="nota">nota</option>
+            <option value="tema">tema</option>
+            <option value="idea">idea</option>
+          </select>
+
+          <label for="text">contenido</label>
+          <textarea id="text" required></textarea>
+
+          <button type="submit">guardar</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>información guardada</h2>
+        <div id="synopsis-list"></div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script src="../footer.js"></script>
+    <script src="../menu.js"></script>
+    <script src="../admin.js"></script>
+    <script src="../supabase-data.js"></script>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mundo | descifrAndo munDos</title>
+    <link href="../style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+
+  <body class="libros-page">
+    <header>
+      <h1>mundo</h1>
+      <p class="subtitle" id="book-title">mis libros</p>
+      <p class="intro">ciudades, lugares, atmósferas y rincones de la historia</p>
+    </header>
+
+    <div id="menu"></div>
+
+    <main>
+      <section class="card admin-only">
+        <h2>nuevo lugar</h2>
+
+        <form id="world-form" class="review-form">
+          <label for="name">nombre de la ciudad o lugar</label>
+          <input type="text" id="name" required>
+
+          <label for="bookName">libro en el que aparece</label>
+          <input type="text" id="bookName" placeholder="Ej: Corazón de piedra">
+
+          <label for="photo">foto</label>
+          <input type="file" id="photo" accept="image/*">
+
+          <label for="description">descripción general</label>
+          <textarea id="description" required></textarea>
+
+          <label for="notes">notas extra</label>
+          <textarea id="notes"></textarea>
+
+          <button type="submit">guardar lugar</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>lugares guardados</h2>
+        <div id="places"></div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase.js"></script>
+    <script src="../footer.js"></script>
+    <script src="../menu.js"></script>
+    <script src="../admin.js"></script>
+    <script src="../supabase-data.js"></script>
+  </body>
+</html>

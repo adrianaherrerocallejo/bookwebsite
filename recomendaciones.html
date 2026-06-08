@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>recomendaciones | descifrAndo munDos</title>
+    <link href="style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+
+  <body class="recomendaciones-page">
+    <header>
+      <h1>recomendaciones</h1>
+      <p class="subtitle">descifrAndo munDos</p>
+      <p class="intro">cosas que vi, leí, escuché, probé o me hicieron pensar</p>
+    </header>
+
+    <div id="menu"></div>
+
+    <main>
+      <section class="card admin-only">
+        <h2>nueva recomendación</h2>
+
+        <form id="review-form" class="review-form">
+          <label for="date">fecha</label>
+          <input type="date" id="date" required>
+
+          <label for="category">categoría</label>
+          <select id="category" required>
+            <option value="">elige una categoría</option>
+            <option value="libro">libro</option>
+            <option value="película">película</option>
+            <option value="serie">serie</option>
+            <option value="música">música</option>
+            <option value="museo">museo</option>
+            <option value="restaurante">restaurante</option>
+            <option value="lugar">lugar</option>
+            <option value="otro">otro</option>
+          </select>
+
+          <label for="title">nombre</label>
+          <input type="text" id="title" placeholder="Ej: Los nenúfares, Interstellar, un café raro..." required>
+
+          <label for="rating">nota</label>
+          <select id="rating" required>
+            <option value="">elige una nota</option>
+            <option value="★★★★★">★★★★★</option>
+            <option value="★★★★☆">★★★★☆</option>
+            <option value="★★★☆☆">★★★☆☆</option>
+            <option value="★★☆☆☆">★★☆☆☆</option>
+            <option value="★☆☆☆☆">★☆☆☆☆</option>
+          </select>
+
+          <label for="photo">foto</label>
+          <input type="file" id="photo" accept="image/*">
+
+          <label for="text">reseña / recomendación</label>
+          <textarea id="text" placeholder="escribe qué te pareció, qué te hizo sentir, si lo recomendarías..." required></textarea>
+
+          <button type="submit">guardar recomendación</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>mis recomendaciones</h2>
+        <div id="reviews"></div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="footer.js"></script>
+    <script src="menu.js"></script>
+    <script src="admin.js"></script>
+    <script src="supabase-data.js"></script>
+  </body>
+</html>

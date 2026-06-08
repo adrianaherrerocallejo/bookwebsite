@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>filosofía | descifrAndo munDos</title>
+    <link href="style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+
+  <body class="filosofia-page">
+    <header>
+      <h1>filosofía</h1>
+      <p class="subtitle">descifrAndo munDos</p>
+      <p class="intro">jardín de pensamientos que rondan mi cabeza</p>
+    </header>
+
+    <div id="menu"></div>
+
+    <main>
+      <section class="card admin-only">
+        <h2>nueva entrada</h2>
+
+        <form id="diary-form" class="diary-form">
+          <label for="date">fecha</label>
+          <input type="date" id="date" required>
+
+          <label for="title">título</label>
+          <input type="text" id="title" placeholder="Título del pensamiento" required>
+
+          <label for="text">pensamiento</label>
+          <textarea id="text" placeholder="escribe aquí lo que quieras guardar..." required></textarea>
+
+          <button type="submit">guardar entrada</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>entradas</h2>
+        <div id="entries"></div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="footer.js"></script>
+    <script src="menu.js"></script>
+    <script src="admin.js"></script>
+    <script src="supabase-data.js"></script>
+  </body>
+</html>

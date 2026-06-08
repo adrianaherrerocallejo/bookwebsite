@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login | descifrAndo munDos</title>
+    <link href="style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+
+  <body class="home-page">
+    <header>
+      <h1>login</h1>
+      <p class="subtitle">descifrAndo munDos</p>
+      <p class="intro">entrada secreta al caos creativo</p>
+    </header>
+
+    <div id="menu"></div>
+
+    <main>
+      <section class="card">
+        <h2>entrar</h2>
+
+        <form id="login-form" class="review-form">
+          <label for="email">email</label>
+          <input type="email" id="email" required>
+
+          <label for="password">contraseña</label>
+          <input type="password" id="password" required>
+
+          <button type="submit">entrar</button>
+        </form>
+
+        <button id="logout-button" class="delete-button" type="button">salir</button>
+        <p id="login-message"></p>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="footer.js"></script>
+    <script src="menu.js"></script>
+
+    <script>
+      const form = document.getElementById("login-form");
+      const message = document.getElementById("login-message");
+      const logoutButton = document.getElementById("logout-button");
+
+      async function updateLoginMessage() {
+        const { data } = await supabaseClient.auth.getSession();
+
+        if (data.session) {
+          localStorage.setItem("adminMode", "true");
+          message.textContent = "Ya estás dentro. Puedes crear y borrar entradas.";
+        } else {
+          localStorage.removeItem("adminMode");
+          message.textContent = "No has iniciado sesión.";
+        }
+      }
+
+      form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        message.textContent = "entrando...";
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          localStorage.removeItem("adminMode");
+          message.textContent = "No se ha podido entrar: " + error.message;
+          return;
+        }
+
+        localStorage.setItem("adminMode", "true");
+        message.textContent = "Ya estás dentro. Puedes volver a la web.";
+      });
+
+      logoutButton.addEventListener("click", async function() {
+        await supabaseClient.auth.signOut();
+        localStorage.removeItem("adminMode");
+        message.textContent = "Has salido.";
+      });
+
+      updateLoginMessage();
+    </script>
+  </body>
+</html>

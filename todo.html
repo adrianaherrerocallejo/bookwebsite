@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>to do list | descifrAndo munDos</title>
+    <link href="style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+
+  <body class="todo-page">
+    <header>
+      <h1>to do list</h1>
+      <p class="subtitle">descifrAndo munDos</p>
+      <p class="intro">cosas que quiero mejorar de esta página para que no se me olviden</p>
+    </header>
+
+    <div id="menu"></div>
+
+    <main>
+      <section class="card admin-only">
+        <h2>nueva tarea</h2>
+
+        <form id="todo-form" class="todo-form">
+          <label for="task">qué quiero hacer</label>
+          <input type="text" id="task" placeholder="Ej: arreglar el fondo de libros..." required>
+
+          <label for="category">apartado</label>
+          <select id="category">
+            <option value="general">general</option>
+            <option value="diseño">diseño</option>
+            <option value="menú">menú</option>
+            <option value="filosofía">filosofía</option>
+            <option value="recomendaciones">recomendaciones</option>
+            <option value="libros">libros</option>
+            <option value="fotos">fotos</option>
+            <option value="ideas nuevas">ideas nuevas</option>
+          </select>
+
+          <label for="priority">prioridad</label>
+          <select id="priority">
+            <option value="normal">normal</option>
+            <option value="alta">alta</option>
+            <option value="baja">baja</option>
+          </select>
+
+          <button type="submit">guardar tarea</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>pendientes</h2>
+        <div id="todo-list"></div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="footer.js"></script>
+    <script src="menu.js"></script>
+    <script src="admin.js"></script>
+    <script src="supabase-data.js"></script>
+  </body>
+</html>
