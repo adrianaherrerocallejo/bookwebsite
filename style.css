@@ -40,7 +40,7 @@ body {
 
 header {
   text-align: center;
-  padding: 90px 20px 60px;
+  padding: 74px 20px 46px;
   background: rgba(255, 255, 255, 0.28);
   border-bottom: 1px solid rgba(120, 140, 160, 0.25);
 }
@@ -202,8 +202,10 @@ footer {
 }
 
 .secondary-card {
-  margin-top: 28px;
+  box-sizing: border-box;
+  margin-top: 42px;
   min-height: 0;
+  width: 100%;
 }
 
 .book-intro {
