@@ -620,6 +620,7 @@ footer {
 }
 
 .world-choice-grid {
+  grid-template-columns: 1fr;
   margin-bottom: 28px;
 }
 
