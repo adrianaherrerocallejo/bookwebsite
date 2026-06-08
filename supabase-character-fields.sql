@@ -1,0 +1,10 @@
+alter table public.book_characters add column if not exists nickname text;
+alter table public.book_characters add column if not exists role_in_story text;
+alter table public.book_characters add column if not exists favorite_food text;
+alter table public.book_characters add column if not exists pet text;
+alter table public.book_characters add column if not exists hates text;
+alter table public.book_characters add column if not exists fear text;
+alter table public.book_characters add column if not exists dream text;
+alter table public.book_characters add column if not exists secret text;
+alter table public.book_characters add column if not exists quote text;
+alter table public.book_characters alter column description drop not null;

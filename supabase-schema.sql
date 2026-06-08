@@ -32,12 +32,21 @@ create table if not exists public.book_characters (
   book_slug text not null,
   name text not null,
   birth text,
+  nickname text,
+  role_in_story text,
   mbti text,
   likes text,
   favorite_color text,
+  favorite_food text,
+  pet text,
+  hates text,
   talents text,
   weaknesses text,
-  description text not null,
+  fear text,
+  dream text,
+  secret text,
+  quote text,
+  description text,
   photo_data text
 );
 
@@ -51,6 +60,17 @@ create table if not exists public.book_places (
   notes text,
   photo_data text
 );
+
+alter table public.book_characters add column if not exists nickname text;
+alter table public.book_characters add column if not exists role_in_story text;
+alter table public.book_characters add column if not exists favorite_food text;
+alter table public.book_characters add column if not exists pet text;
+alter table public.book_characters add column if not exists hates text;
+alter table public.book_characters add column if not exists fear text;
+alter table public.book_characters add column if not exists dream text;
+alter table public.book_characters add column if not exists secret text;
+alter table public.book_characters add column if not exists quote text;
+alter table public.book_characters alter column description drop not null;
 
 create table if not exists public.book_synopsis (
   id uuid primary key default gen_random_uuid(),

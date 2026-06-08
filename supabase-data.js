@@ -474,7 +474,10 @@ async function initBookItems(config) {
 }
 
 function textBlock(parts) {
-  return parts.map(([label, value]) => `${label}:\n${value || "-"}`).join("\n\n");
+  return parts
+    .filter(([, value]) => value && value.trim())
+    .map(([label, value]) => `${label}:\n${value}`)
+    .join("\n\n");
 }
 
 function renderCharacter(item, prettyBook, refresh) {
@@ -494,14 +497,28 @@ function renderCharacter(item, prettyBook, refresh) {
 
   const meta = document.createElement("p");
   meta.className = "review-meta";
-  meta.textContent = `${item.birth || "sin fecha"} · ${item.mbti || "sin MBTI"} · color: ${item.favorite_color || "sin color"}`;
+  const metaParts = [
+    item.role_in_story,
+    item.birth,
+    item.mbti,
+    item.favorite_color ? `color: ${item.favorite_color}` : "",
+    item.favorite_food ? `comida: ${item.favorite_food}` : ""
+  ].filter(Boolean);
+  meta.textContent = metaParts.join(" · ");
 
   const text = document.createElement("p");
   text.className = "review-text";
   text.textContent = textBlock([
+    ["Apodo", item.nickname],
     ["Gustos", item.likes],
+    ["Mascota", item.pet],
+    ["Cosas que detesta", item.hates],
     ["Talentos", item.talents],
     ["Debilidades", item.weaknesses],
+    ["Miedo", item.fear],
+    ["Deseo o sueño", item.dream],
+    ["Secreto", item.secret],
+    ["Frase", item.quote],
     ["Descripción", item.description]
   ]);
 
@@ -511,8 +528,12 @@ function renderCharacter(item, prettyBook, refresh) {
   button.onclick = () => deleteRow("book_characters", item.id, refresh);
 
   article.appendChild(title);
-  article.appendChild(meta);
-  article.appendChild(text);
+  if (meta.textContent) {
+    article.appendChild(meta);
+  }
+  if (text.textContent) {
+    article.appendChild(text);
+  }
   article.appendChild(button);
   return article;
 }
@@ -596,11 +617,20 @@ document.addEventListener("DOMContentLoaded", () => {
       book_slug: book,
       name: document.getElementById("name").value,
       birth: document.getElementById("birth").value,
+      nickname: document.getElementById("nickname").value,
+      role_in_story: document.getElementById("role").value,
       mbti: document.getElementById("mbti").value,
       likes: document.getElementById("likes").value,
       favorite_color: document.getElementById("color").value,
+      favorite_food: document.getElementById("food").value,
+      pet: document.getElementById("pet").value,
+      hates: document.getElementById("hates").value,
       talents: document.getElementById("talents").value,
       weaknesses: document.getElementById("weaknesses").value,
+      fear: document.getElementById("fear").value,
+      dream: document.getElementById("dream").value,
+      secret: document.getElementById("secret").value,
+      quote: document.getElementById("quote").value,
       description: document.getElementById("description").value,
       photo_data: await readPhotoAsCompressedBase64(document.getElementById("photo").files[0])
     }),
