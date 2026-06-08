@@ -473,6 +473,260 @@ async function initBookItems(config) {
   showItems();
 }
 
+async function initWorldPage() {
+  const kingdomForm = document.getElementById("kingdom-form");
+  const placeForm = document.getElementById("place-form");
+  const kingdomsContainer = document.getElementById("kingdoms");
+  const placesContainer = document.getElementById("places");
+  const mapGallery = document.getElementById("world-map-gallery");
+
+  if (!kingdomForm && !placeForm) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const book = params.get("book") || "sin-saga";
+  const prettyBook = book.replaceAll("-", " ");
+  const title = document.getElementById("book-title");
+
+  if (title) {
+    title.textContent = prettyBook;
+  }
+
+  const hideKingdoms = book === "las-memorias-del-fuego";
+
+  if (hideKingdoms) {
+    document.querySelectorAll(".kingdoms-section, #kingdoms-link").forEach(element => {
+      element.style.display = "none";
+    });
+  }
+
+  function addImages(container, images) {
+    images.filter(image => image.src).forEach(imageData => {
+      const image = document.createElement("img");
+      image.className = imageData.className;
+      image.src = imageData.src;
+      image.alt = imageData.alt;
+      container.appendChild(image);
+    });
+  }
+
+  async function showKingdoms() {
+    if (!kingdomsContainer || hideKingdoms) {
+      return;
+    }
+
+    showMessage(kingdomsContainer, "cargando reinos...");
+
+    const { data, error } = await supabaseClient
+      .from("book_kingdoms")
+      .select("*")
+      .eq("book_slug", book)
+      .order("display_order", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      showMessage(kingdomsContainer, "No se han podido cargar los reinos: " + error.message);
+      return;
+    }
+
+    kingdomsContainer.innerHTML = "";
+
+    if (mapGallery) {
+      mapGallery.innerHTML = "";
+      addImages(mapGallery, data.map(item => ({
+        src: item.map_data,
+        alt: `mapa de ${item.name}`,
+        className: "world-map-image"
+      })));
+    }
+
+    if (!data.length) {
+      showMessage(kingdomsContainer, "Todavía no hay reinos.");
+      return;
+    }
+
+    data.forEach(item => {
+      const article = document.createElement("article");
+      article.className = "review-entry kingdom-entry";
+
+      const images = document.createElement("div");
+      images.className = "world-image-pair";
+      addImages(images, [
+        { src: item.flag_data, alt: `bandera de ${item.name}`, className: "world-small-image" },
+        { src: item.map_data, alt: `mapa de ${item.name}`, className: "world-small-image" }
+      ]);
+      if (images.children.length) {
+        article.appendChild(images);
+      }
+
+      const heading = document.createElement("h3");
+      heading.textContent = item.display_order ? `${item.display_order}. ${item.name}` : item.name;
+
+      const meta = document.createElement("p");
+      meta.className = "review-meta";
+      meta.textContent = [
+        item.capital ? `capital: ${item.capital}` : "",
+        item.languages ? `idioma/s: ${item.languages}` : "",
+        item.explored_in_book ? `explorado en: ${item.explored_in_book}` : ""
+      ].filter(Boolean).join(" · ");
+
+      const text = document.createElement("p");
+      text.className = "review-text";
+      text.textContent = textBlock([
+        ["Tipo de reino", item.kingdom_type],
+        ["Gobernante / familia real", item.government],
+        ["Cultura", item.culture],
+        ["Religión", item.religion],
+        ["Historia", item.history],
+        ["Alianzas", item.alliances],
+        ["Enemigos", item.enemies],
+        ["Info extra", item.extra_info]
+      ]);
+
+      const button = document.createElement("button");
+      button.className = "delete-button admin-only";
+      button.textContent = "borrar";
+      button.onclick = () => deleteRow("book_kingdoms", item.id, showKingdoms);
+
+      article.appendChild(heading);
+      if (meta.textContent) {
+        article.appendChild(meta);
+      }
+      if (text.textContent) {
+        article.appendChild(text);
+      }
+      article.appendChild(button);
+      kingdomsContainer.appendChild(article);
+    });
+
+    window.applyAdminVisibility();
+  }
+
+  async function showPlaces() {
+    if (!placesContainer) {
+      return;
+    }
+
+    showMessage(placesContainer, "cargando lugares...");
+
+    const { data, error } = await supabaseClient
+      .from("book_places")
+      .select("*")
+      .eq("book_slug", book)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      showMessage(placesContainer, "No se han podido cargar los lugares: " + error.message);
+      return;
+    }
+
+    placesContainer.innerHTML = "";
+
+    if (!data.length) {
+      showMessage(placesContainer, "Todavía no hay lugares.");
+      return;
+    }
+
+    data.forEach(item => {
+      placesContainer.appendChild(renderPlace(item, prettyBook, showPlaces));
+    });
+
+    window.applyAdminVisibility();
+  }
+
+  if (kingdomForm && !hideKingdoms) {
+    kingdomForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      try {
+        setFormStatus(kingdomForm, "guardando...");
+        const session = await requireSession();
+
+        if (!session) {
+          setFormStatus(kingdomForm, "Tienes que entrar en login para guardar.");
+          return;
+        }
+
+        const orderValue = document.getElementById("kingdomOrder").value;
+        const { error } = await supabaseClient.from("book_kingdoms").insert({
+          book_slug: book,
+          name: document.getElementById("kingdomName").value,
+          display_order: orderValue ? Number(orderValue) : null,
+          flag_data: await readPhotoAsCompressedBase64(document.getElementById("flag").files[0]),
+          map_data: await readPhotoAsCompressedBase64(document.getElementById("map").files[0]),
+          capital: document.getElementById("capital").value,
+          languages: document.getElementById("languages").value,
+          culture: document.getElementById("culture").value,
+          religion: document.getElementById("religion").value,
+          history: document.getElementById("history").value,
+          government: document.getElementById("government").value,
+          kingdom_type: document.getElementById("kingdomType").value,
+          alliances: document.getElementById("alliances").value,
+          enemies: document.getElementById("enemies").value,
+          explored_in_book: document.getElementById("exploredInBook").value,
+          extra_info: document.getElementById("kingdomExtra").value
+        });
+
+        if (error) {
+          setFormStatus(kingdomForm, "No se ha podido guardar: " + error.message);
+          return;
+        }
+
+        kingdomForm.reset();
+        setFormStatus(kingdomForm, "guardado.");
+        showKingdoms();
+      } catch (error) {
+        setFormStatus(kingdomForm, "No se ha podido guardar: " + error.message);
+      }
+    });
+  }
+
+  if (placeForm) {
+    placeForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      try {
+        setFormStatus(placeForm, "guardando...");
+        const session = await requireSession();
+
+        if (!session) {
+          setFormStatus(placeForm, "Tienes que entrar en login para guardar.");
+          return;
+        }
+
+        const extraInfo = document.getElementById("placeExtra").value;
+        const importance = document.getElementById("placeImportance").value;
+        const { error } = await supabaseClient.from("book_places").insert({
+          book_slug: book,
+          name: document.getElementById("placeName").value,
+          book_name: document.getElementById("placeBook").value,
+          kingdom_name: document.getElementById("placeKingdom").value,
+          place_type: document.getElementById("placeType").value,
+          importance: importance,
+          notes: extraInfo,
+          description: extraInfo || importance || "-",
+          photo_data: await readPhotoAsCompressedBase64(document.getElementById("placePhoto").files[0])
+        });
+
+        if (error) {
+          setFormStatus(placeForm, "No se ha podido guardar: " + error.message);
+          return;
+        }
+
+        placeForm.reset();
+        setFormStatus(placeForm, "guardado.");
+        showPlaces();
+      } catch (error) {
+        setFormStatus(placeForm, "No se ha podido guardar: " + error.message);
+      }
+    });
+  }
+
+  showKingdoms();
+  showPlaces();
+}
+
 function textBlock(parts) {
   return parts
     .filter(([, value]) => value && value.trim())
@@ -555,13 +809,17 @@ function renderPlace(item, prettyBook, refresh) {
 
   const meta = document.createElement("p");
   meta.className = "review-meta";
-  meta.textContent = item.book_name || prettyBook;
+  meta.textContent = [
+    item.kingdom_name ? `reino: ${item.kingdom_name}` : "",
+    item.book_name ? `libro: ${item.book_name}` : "",
+    item.place_type
+  ].filter(Boolean).join(" · ");
 
   const text = document.createElement("p");
   text.className = "review-text";
   text.textContent = textBlock([
-    ["Descripción", item.description],
-    ["Notas", item.notes]
+    ["Importancia en la historia", item.importance],
+    ["Info extra", item.notes || (item.description === "-" ? "" : item.description)]
   ]);
 
   const button = document.createElement("button");
@@ -570,8 +828,12 @@ function renderPlace(item, prettyBook, refresh) {
   button.onclick = () => deleteRow("book_places", item.id, refresh);
 
   article.appendChild(title);
-  article.appendChild(meta);
-  article.appendChild(text);
+  if (meta.textContent) {
+    article.appendChild(meta);
+  }
+  if (text.textContent) {
+    article.appendChild(text);
+  }
   article.appendChild(button);
   return article;
 }
@@ -607,6 +869,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFilosofia();
   initRecomendaciones();
   initTodo();
+  initWorldPage();
 
   initBookItems({
     formId: "character-form",
@@ -637,21 +900,6 @@ document.addEventListener("DOMContentLoaded", () => {
     render: renderCharacter
   });
 
-  initBookItems({
-    formId: "world-form",
-    containerId: "places",
-    table: "book_places",
-    emptyText: "Todavía no hay lugares.",
-    payload: async book => ({
-      book_slug: book,
-      name: document.getElementById("name").value,
-      book_name: document.getElementById("bookName").value,
-      description: document.getElementById("description").value,
-      notes: document.getElementById("notes").value,
-      photo_data: await readPhotoAsCompressedBase64(document.getElementById("photo").files[0])
-    }),
-    render: renderPlace
-  });
 
   initBookItems({
     formId: "synopsis-form",

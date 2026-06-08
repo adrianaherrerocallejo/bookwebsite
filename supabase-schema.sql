@@ -56,9 +56,33 @@ create table if not exists public.book_places (
   book_slug text not null,
   name text not null,
   book_name text,
-  description text not null,
+  kingdom_name text,
+  place_type text,
+  importance text,
+  description text,
   notes text,
   photo_data text
+);
+
+create table if not exists public.book_kingdoms (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  book_slug text not null,
+  name text not null,
+  display_order integer,
+  flag_data text,
+  map_data text,
+  capital text,
+  languages text,
+  culture text,
+  religion text,
+  history text,
+  government text,
+  kingdom_type text,
+  alliances text,
+  enemies text,
+  explored_in_book text,
+  extra_info text
 );
 
 alter table public.book_characters add column if not exists nickname text;
@@ -71,6 +95,10 @@ alter table public.book_characters add column if not exists dream text;
 alter table public.book_characters add column if not exists secret text;
 alter table public.book_characters add column if not exists quote text;
 alter table public.book_characters alter column description drop not null;
+alter table public.book_places add column if not exists kingdom_name text;
+alter table public.book_places add column if not exists place_type text;
+alter table public.book_places add column if not exists importance text;
+alter table public.book_places alter column description drop not null;
 
 create table if not exists public.book_synopsis (
   id uuid primary key default gen_random_uuid(),
@@ -85,6 +113,7 @@ alter table public.filosofia_entries enable row level security;
 alter table public.recommendation_entries enable row level security;
 alter table public.web_todo_tasks enable row level security;
 alter table public.book_characters enable row level security;
+alter table public.book_kingdoms enable row level security;
 alter table public.book_places enable row level security;
 alter table public.book_synopsis enable row level security;
 
@@ -98,6 +127,8 @@ drop policy if exists "public read book_characters" on public.book_characters;
 drop policy if exists "authenticated write book_characters" on public.book_characters;
 drop policy if exists "public read book_places" on public.book_places;
 drop policy if exists "authenticated write book_places" on public.book_places;
+drop policy if exists "public read book_kingdoms" on public.book_kingdoms;
+drop policy if exists "authenticated write book_kingdoms" on public.book_kingdoms;
 drop policy if exists "public read book_synopsis" on public.book_synopsis;
 drop policy if exists "authenticated write book_synopsis" on public.book_synopsis;
 drop policy if exists "authenticated insert filosofia_entries" on public.filosofia_entries;
@@ -115,6 +146,9 @@ drop policy if exists "authenticated delete book_characters" on public.book_char
 drop policy if exists "authenticated insert book_places" on public.book_places;
 drop policy if exists "authenticated update book_places" on public.book_places;
 drop policy if exists "authenticated delete book_places" on public.book_places;
+drop policy if exists "authenticated insert book_kingdoms" on public.book_kingdoms;
+drop policy if exists "authenticated update book_kingdoms" on public.book_kingdoms;
+drop policy if exists "authenticated delete book_kingdoms" on public.book_kingdoms;
 drop policy if exists "authenticated insert book_synopsis" on public.book_synopsis;
 drop policy if exists "authenticated update book_synopsis" on public.book_synopsis;
 drop policy if exists "authenticated delete book_synopsis" on public.book_synopsis;
@@ -124,12 +158,14 @@ grant select on public.filosofia_entries to anon, authenticated;
 grant select on public.recommendation_entries to anon, authenticated;
 grant select on public.web_todo_tasks to anon, authenticated;
 grant select on public.book_characters to anon, authenticated;
+grant select on public.book_kingdoms to anon, authenticated;
 grant select on public.book_places to anon, authenticated;
 grant select on public.book_synopsis to anon, authenticated;
 grant insert, update, delete on public.filosofia_entries to authenticated;
 grant insert, update, delete on public.recommendation_entries to authenticated;
 grant insert, update, delete on public.web_todo_tasks to authenticated;
 grant insert, update, delete on public.book_characters to authenticated;
+grant insert, update, delete on public.book_kingdoms to authenticated;
 grant insert, update, delete on public.book_places to authenticated;
 grant insert, update, delete on public.book_synopsis to authenticated;
 
@@ -205,8 +241,16 @@ create policy "public read book_places"
   on public.book_places for select
   using (true);
 
+create policy "public read book_kingdoms"
+  on public.book_kingdoms for select
+  using (true);
+
 create policy "authenticated insert book_places"
   on public.book_places for insert
+  with check (auth.role() = 'authenticated');
+
+create policy "authenticated insert book_kingdoms"
+  on public.book_kingdoms for insert
   with check (auth.role() = 'authenticated');
 
 create policy "authenticated update book_places"
@@ -214,8 +258,17 @@ create policy "authenticated update book_places"
   using (auth.role() = 'authenticated')
   with check (auth.role() = 'authenticated');
 
+create policy "authenticated update book_kingdoms"
+  on public.book_kingdoms for update
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
 create policy "authenticated delete book_places"
   on public.book_places for delete
+  using (auth.role() = 'authenticated');
+
+create policy "authenticated delete book_kingdoms"
+  on public.book_kingdoms for delete
   using (auth.role() = 'authenticated');
 
 create policy "public read book_synopsis"

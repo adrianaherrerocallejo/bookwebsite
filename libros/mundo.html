@@ -7,41 +7,126 @@
     <link href="../style.css" rel="stylesheet" type="text/css" media="all">
   </head>
 
-  <body class="libros-page">
+  <body class="libros-page world-page">
     <header>
       <h1>mundo</h1>
       <p class="subtitle" id="book-title">mis libros</p>
-      <p class="intro">países, reinos, ciudades, lugares y atmósferas de la historia</p>
+      <p class="intro">mapas, reinos, tierras, lugares y atmósferas de la saga</p>
     </header>
 
     <div id="menu"></div>
 
     <main>
-      <section class="card admin-only">
+      <section class="card world-map-card">
+        <h2>mapa</h2>
+        <p>
+          Espacio para reunir la geografía visual de la saga: mapas generales,
+          mapas de reinos y lugares importantes.
+        </p>
+        <div id="world-map-gallery" class="world-map-gallery"></div>
+      </section>
+
+      <section class="home-grid world-choice-grid">
+        <a class="home-card" id="kingdoms-link" href="#reinos">
+          <h2>reinos</h2>
+          <p>Reinos en orden, con bandera, mapa, capital, cultura, religión e historia.</p>
+        </a>
+
+        <a class="home-card" href="#lugares">
+          <h2>lugares</h2>
+          <p>Lugares importantes, fotos, reino al que pertenecen e información extra.</p>
+        </a>
+      </section>
+
+      <section class="card admin-only kingdoms-section" id="nuevo-reino">
+        <h2>nuevo reino</h2>
+
+        <form id="kingdom-form" class="review-form">
+          <label for="kingdomName">nombre</label>
+          <input type="text" id="kingdomName" required>
+
+          <label for="kingdomOrder">orden</label>
+          <input type="number" id="kingdomOrder" min="1" placeholder="1, 2, 3...">
+
+          <label for="flag">bandera</label>
+          <input type="file" id="flag" accept="image/*">
+
+          <label for="map">mapa</label>
+          <input type="file" id="map" accept="image/*">
+
+          <label for="capital">capital</label>
+          <input type="text" id="capital">
+
+          <label for="languages">idioma/s</label>
+          <input type="text" id="languages">
+
+          <label for="culture">cultura</label>
+          <textarea id="culture"></textarea>
+
+          <label for="religion">religión</label>
+          <textarea id="religion"></textarea>
+
+          <label for="history">historia</label>
+          <textarea id="history"></textarea>
+
+          <label for="government">gobernante / familia real</label>
+          <input type="text" id="government">
+
+          <label for="kingdomType">tipo de reino</label>
+          <input type="text" id="kingdomType" placeholder="imperio, reino costero, ciudad-estado...">
+
+          <label for="alliances">alianzas</label>
+          <textarea id="alliances"></textarea>
+
+          <label for="enemies">enemigos</label>
+          <textarea id="enemies"></textarea>
+
+          <label for="exploredInBook">libro en el que se explora</label>
+          <input type="text" id="exploredInBook">
+
+          <label for="kingdomExtra">info extra</label>
+          <textarea id="kingdomExtra"></textarea>
+
+          <button type="submit">guardar reino</button>
+        </form>
+      </section>
+
+      <section class="card kingdoms-section" id="reinos">
+        <h2>reinos</h2>
+        <div id="kingdoms"></div>
+      </section>
+
+      <section class="card admin-only" id="nuevo-lugar">
         <h2>nuevo lugar</h2>
 
-        <form id="world-form" class="review-form">
-          <label for="name">nombre del país, reino, ciudad o lugar</label>
-          <input type="text" id="name" required>
+        <form id="place-form" class="review-form">
+          <label for="placeName">nombre</label>
+          <input type="text" id="placeName" required>
 
-          <label for="bookName">libro en el que aparece</label>
-          <input type="text" id="bookName" placeholder="Ej: Corazón de piedra">
+          <label for="placePhoto">foto</label>
+          <input type="file" id="placePhoto" accept="image/*">
 
-          <label for="photo">foto</label>
-          <input type="file" id="photo" accept="image/*">
+          <label for="placeKingdom">reino al que pertenece</label>
+          <input type="text" id="placeKingdom">
 
-          <label for="description">descripción general</label>
-          <textarea id="description" required></textarea>
+          <label for="placeBook">libro en el que aparece</label>
+          <input type="text" id="placeBook">
 
-          <label for="notes">notas extra</label>
-          <textarea id="notes"></textarea>
+          <label for="placeType">tipo de lugar</label>
+          <input type="text" id="placeType" placeholder="ciudad, bosque, templo, puerto...">
+
+          <label for="placeImportance">importancia en la historia</label>
+          <textarea id="placeImportance"></textarea>
+
+          <label for="placeExtra">info extra</label>
+          <textarea id="placeExtra"></textarea>
 
           <button type="submit">guardar lugar</button>
         </form>
       </section>
 
-      <section class="card">
-        <h2>lugares guardados</h2>
+      <section class="card" id="lugares">
+        <h2>lugares</h2>
         <div id="places"></div>
       </section>
     </main>

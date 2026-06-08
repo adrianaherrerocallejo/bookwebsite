@@ -615,8 +615,59 @@ footer {
   min-height: 260px;
 }
 
+.world-page main {
+  max-width: 940px;
+}
+
+.world-choice-grid {
+  margin-bottom: 28px;
+}
+
+.world-page .world-choice-grid .home-card {
+  min-height: 180px;
+}
+
+.world-map-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.world-map-image,
+.world-small-image {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(80, 100, 120, 0.16);
+}
+
+.world-map-image {
+  max-height: 340px;
+}
+
+.world-image-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.world-small-image {
+  height: 210px;
+}
+
+.kingdom-entry {
+  border-left-color: rgba(91, 124, 119, 0.65);
+}
+
 @media (max-width: 700px) {
   .libros-page .home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .world-map-gallery,
+  .world-image-pair {
     grid-template-columns: 1fr;
   }
 }
