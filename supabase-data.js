@@ -479,6 +479,10 @@ async function initWorldPage() {
   const kingdomsContainer = document.getElementById("kingdoms");
   const placesContainer = document.getElementById("places");
   const mapGallery = document.getElementById("world-map-gallery");
+  const worldIndex = document.getElementById("world-index");
+  const kingdomDetail = document.getElementById("kingdom-detail");
+  const kingdomDetailContent = document.getElementById("kingdom-detail-content");
+  const backToKingdoms = document.getElementById("back-to-kingdoms");
 
   if (!kingdomForm && !placeForm) {
     return;
@@ -488,8 +492,7 @@ async function initWorldPage() {
   const book = params.get("book") || "sin-saga";
   const prettyBook = book.replaceAll("-", " ");
   const title = document.getElementById("book-title");
-  const tabButtons = Array.from(document.querySelectorAll("[data-world-tab]"));
-  const tabPanels = Array.from(document.querySelectorAll("[data-world-panel]"));
+  let selectedKingdom = null;
 
   if (title) {
     title.textContent = prettyBook;
@@ -503,26 +506,6 @@ async function initWorldPage() {
     });
   }
 
-  function setActiveWorldTab(tabName) {
-    tabButtons.forEach(button => {
-      const isActive = button.dataset.worldTab === tabName;
-      button.classList.toggle("active", isActive);
-      button.setAttribute("aria-selected", isActive ? "true" : "false");
-    });
-
-    tabPanels.forEach(panel => {
-      panel.classList.toggle("active", panel.dataset.worldPanel === tabName);
-    });
-  }
-
-  tabButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      setActiveWorldTab(button.dataset.worldTab);
-    });
-  });
-
-  setActiveWorldTab(hideKingdoms ? "lugares" : "reinos");
-
   function addImages(container, images) {
     images.filter(image => image.src).forEach(imageData => {
       const image = document.createElement("img");
@@ -531,6 +514,90 @@ async function initWorldPage() {
       image.alt = imageData.alt;
       container.appendChild(image);
     });
+  }
+
+  function showWorldIndex() {
+    selectedKingdom = null;
+
+    if (worldIndex) {
+      worldIndex.hidden = false;
+    }
+
+    if (kingdomDetail) {
+      kingdomDetail.hidden = true;
+    }
+
+    if (placesContainer) {
+      placesContainer.innerHTML = "";
+    }
+  }
+
+  function showKingdomDetail(item) {
+    selectedKingdom = item;
+
+    if (worldIndex) {
+      worldIndex.hidden = true;
+    }
+
+    if (kingdomDetail) {
+      kingdomDetail.hidden = false;
+    }
+
+    const placeKingdomInput = document.getElementById("placeKingdom");
+    if (placeKingdomInput) {
+      placeKingdomInput.value = item.name;
+    }
+
+    kingdomDetailContent.innerHTML = "";
+
+    const images = document.createElement("div");
+    images.className = "world-image-pair";
+    addImages(images, [
+      { src: item.flag_data, alt: `bandera de ${item.name}`, className: "world-small-image" },
+      { src: item.map_data, alt: `mapa de ${item.name}`, className: "world-small-image world-detail-map" }
+    ]);
+    if (images.children.length) {
+      kingdomDetailContent.appendChild(images);
+    }
+
+    const heading = document.createElement("h2");
+    heading.textContent = item.display_order ? `${item.display_order}. ${item.name}` : item.name;
+
+    const meta = document.createElement("p");
+    meta.className = "review-meta";
+    meta.textContent = [
+      item.capital ? `capital: ${item.capital}` : "",
+      item.languages ? `idioma/s: ${item.languages}` : "",
+      item.explored_in_book ? `explorado en: ${item.explored_in_book}` : ""
+    ].filter(Boolean).join(" · ");
+
+    const text = document.createElement("p");
+    text.className = "review-text";
+    text.textContent = textBlock([
+      ["Tipo de reino", item.kingdom_type],
+      ["Gobernante / familia real", item.government],
+      ["Cultura", item.culture],
+      ["Religión", item.religion],
+      ["Historia", item.history],
+      ["Alianzas", item.alliances],
+      ["Enemigos", item.enemies],
+      ["Info extra", item.extra_info]
+    ]);
+
+    kingdomDetailContent.appendChild(heading);
+    if (meta.textContent) {
+      kingdomDetailContent.appendChild(meta);
+    }
+    if (text.textContent) {
+      kingdomDetailContent.appendChild(text);
+    }
+
+    showPlaces();
+    window.applyAdminVisibility();
+  }
+
+  if (backToKingdoms) {
+    backToKingdoms.addEventListener("click", showWorldIndex);
   }
 
   async function showKingdoms() {
@@ -570,16 +637,19 @@ async function initWorldPage() {
 
     data.forEach(item => {
       const article = document.createElement("article");
-      article.className = "review-entry kingdom-entry";
+      article.className = "review-entry kingdom-list-entry";
 
-      const images = document.createElement("div");
-      images.className = "world-image-pair";
-      addImages(images, [
-        { src: item.flag_data, alt: `bandera de ${item.name}`, className: "world-small-image" },
-        { src: item.map_data, alt: `mapa de ${item.name}`, className: "world-small-image" }
-      ]);
-      if (images.children.length) {
-        article.appendChild(images);
+      const openButton = document.createElement("button");
+      openButton.className = "kingdom-open-button";
+      openButton.type = "button";
+      openButton.onclick = () => showKingdomDetail(item);
+
+      if (item.flag_data) {
+        const flag = document.createElement("img");
+        flag.className = "kingdom-list-flag";
+        flag.src = item.flag_data;
+        flag.alt = `bandera de ${item.name}`;
+        openButton.appendChild(flag);
       }
 
       const heading = document.createElement("h3");
@@ -593,31 +663,17 @@ async function initWorldPage() {
         item.explored_in_book ? `explorado en: ${item.explored_in_book}` : ""
       ].filter(Boolean).join(" · ");
 
-      const text = document.createElement("p");
-      text.className = "review-text";
-      text.textContent = textBlock([
-        ["Tipo de reino", item.kingdom_type],
-        ["Gobernante / familia real", item.government],
-        ["Cultura", item.culture],
-        ["Religión", item.religion],
-        ["Historia", item.history],
-        ["Alianzas", item.alliances],
-        ["Enemigos", item.enemies],
-        ["Info extra", item.extra_info]
-      ]);
+      openButton.appendChild(heading);
+      if (meta.textContent) {
+        openButton.appendChild(meta);
+      }
 
       const button = document.createElement("button");
       button.className = "delete-button admin-only";
       button.textContent = "borrar";
       button.onclick = () => deleteRow("book_kingdoms", item.id, showKingdoms);
 
-      article.appendChild(heading);
-      if (meta.textContent) {
-        article.appendChild(meta);
-      }
-      if (text.textContent) {
-        article.appendChild(text);
-      }
+      article.appendChild(openButton);
       article.appendChild(button);
       kingdomsContainer.appendChild(article);
     });
@@ -630,12 +686,18 @@ async function initWorldPage() {
       return;
     }
 
+    if (!selectedKingdom) {
+      showMessage(placesContainer, "Entra en un reino para ver sus lugares.");
+      return;
+    }
+
     showMessage(placesContainer, "cargando lugares...");
 
     const { data, error } = await supabaseClient
       .from("book_places")
       .select("*")
       .eq("book_slug", book)
+      .eq("kingdom_name", selectedKingdom.name)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -646,7 +708,7 @@ async function initWorldPage() {
     placesContainer.innerHTML = "";
 
     if (!data.length) {
-      showMessage(placesContainer, "Todavía no hay lugares.");
+      showMessage(placesContainer, "Todavía no hay lugares en este reino.");
       return;
     }
 
@@ -717,13 +779,18 @@ async function initWorldPage() {
           return;
         }
 
+        if (!selectedKingdom) {
+          setFormStatus(placeForm, "Entra en un reino antes de guardar un lugar.");
+          return;
+        }
+
         const extraInfo = document.getElementById("placeExtra").value;
         const importance = document.getElementById("placeImportance").value;
         const { error } = await supabaseClient.from("book_places").insert({
           book_slug: book,
           name: document.getElementById("placeName").value,
           book_name: document.getElementById("placeBook").value,
-          kingdom_name: document.getElementById("placeKingdom").value,
+          kingdom_name: selectedKingdom.name,
           place_type: document.getElementById("placeType").value,
           importance: importance,
           notes: extraInfo,
@@ -737,6 +804,7 @@ async function initWorldPage() {
         }
 
         placeForm.reset();
+        document.getElementById("placeKingdom").value = selectedKingdom.name;
         setFormStatus(placeForm, "guardado.");
         showPlaces();
       } catch (error) {
@@ -746,7 +814,7 @@ async function initWorldPage() {
   }
 
   showKingdoms();
-  showPlaces();
+  showWorldIndex();
 }
 
 function textBlock(parts) {
