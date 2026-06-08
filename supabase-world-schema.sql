@@ -33,6 +33,13 @@ create table if not exists public.book_kingdoms (
   extra_info text
 );
 
+create table if not exists public.book_world_maps (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  book_slug text not null,
+  map_data text not null
+);
+
 alter table public.book_places add column if not exists book_name text;
 alter table public.book_places add column if not exists kingdom_name text;
 alter table public.book_places add column if not exists place_type text;
@@ -44,11 +51,14 @@ alter table public.book_places alter column description drop not null;
 grant usage on schema public to anon, authenticated;
 grant select on public.book_places to anon, authenticated;
 grant select on public.book_kingdoms to anon, authenticated;
+grant select on public.book_world_maps to anon, authenticated;
 grant insert, update, delete on public.book_places to authenticated;
 grant insert, update, delete on public.book_kingdoms to authenticated;
+grant insert, update, delete on public.book_world_maps to authenticated;
 
 alter table public.book_places enable row level security;
 alter table public.book_kingdoms enable row level security;
+alter table public.book_world_maps enable row level security;
 
 drop policy if exists "public read book_places" on public.book_places;
 drop policy if exists "authenticated write book_places" on public.book_places;
@@ -61,6 +71,12 @@ drop policy if exists "authenticated write book_kingdoms" on public.book_kingdom
 drop policy if exists "authenticated insert book_kingdoms" on public.book_kingdoms;
 drop policy if exists "authenticated update book_kingdoms" on public.book_kingdoms;
 drop policy if exists "authenticated delete book_kingdoms" on public.book_kingdoms;
+
+drop policy if exists "public read book_world_maps" on public.book_world_maps;
+drop policy if exists "authenticated write book_world_maps" on public.book_world_maps;
+drop policy if exists "authenticated insert book_world_maps" on public.book_world_maps;
+drop policy if exists "authenticated update book_world_maps" on public.book_world_maps;
+drop policy if exists "authenticated delete book_world_maps" on public.book_world_maps;
 
 create policy "public read book_places"
   on public.book_places for select
@@ -94,4 +110,21 @@ create policy "authenticated update book_kingdoms"
 
 create policy "authenticated delete book_kingdoms"
   on public.book_kingdoms for delete
+  using (auth.role() = 'authenticated');
+
+create policy "public read book_world_maps"
+  on public.book_world_maps for select
+  using (true);
+
+create policy "authenticated insert book_world_maps"
+  on public.book_world_maps for insert
+  with check (auth.role() = 'authenticated');
+
+create policy "authenticated update book_world_maps"
+  on public.book_world_maps for update
+  using (auth.role() = 'authenticated')
+  with check (auth.role() = 'authenticated');
+
+create policy "authenticated delete book_world_maps"
+  on public.book_world_maps for delete
   using (auth.role() = 'authenticated');

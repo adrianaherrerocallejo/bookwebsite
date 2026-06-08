@@ -647,6 +647,15 @@ footer {
   max-height: 340px;
 }
 
+.general-world-map {
+  grid-column: 1 / -1;
+  max-height: 520px;
+}
+
+.world-map-form {
+  margin: 18px 0;
+}
+
 .world-image-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

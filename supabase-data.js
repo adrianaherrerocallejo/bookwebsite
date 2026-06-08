@@ -474,6 +474,7 @@ async function initBookItems(config) {
 }
 
 async function initWorldPage() {
+  const worldMapForm = document.getElementById("world-map-form");
   const kingdomForm = document.getElementById("kingdom-form");
   const placeForm = document.getElementById("place-form");
   const kingdomsContainer = document.getElementById("kingdoms");
@@ -484,7 +485,7 @@ async function initWorldPage() {
   const kingdomDetailContent = document.getElementById("kingdom-detail-content");
   const backToKingdoms = document.getElementById("back-to-kingdoms");
 
-  if (!kingdomForm && !placeForm) {
+  if (!worldMapForm && !kingdomForm && !placeForm) {
     return;
   }
 
@@ -600,6 +601,80 @@ async function initWorldPage() {
     backToKingdoms.addEventListener("click", showWorldIndex);
   }
 
+  async function showGeneralMap() {
+    if (!mapGallery) {
+      return;
+    }
+
+    mapGallery.innerHTML = "";
+
+    const { data, error } = await supabaseClient
+      .from("book_world_maps")
+      .select("*")
+      .eq("book_slug", book)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      showMessage(mapGallery, "No se ha podido cargar el mapa general: " + error.message);
+      return;
+    }
+
+    if (!data.length || !data[0].map_data) {
+      showMessage(mapGallery, "Todavía no hay mapa general.");
+      return;
+    }
+
+    addImages(mapGallery, [{
+      src: data[0].map_data,
+      alt: `mapa general de ${prettyBook}`,
+      className: "world-map-image general-world-map"
+    }]);
+  }
+
+  if (worldMapForm) {
+    worldMapForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      try {
+        setFormStatus(worldMapForm, "guardando...");
+        const session = await requireSession();
+
+        if (!session) {
+          setFormStatus(worldMapForm, "Tienes que entrar en login para guardar.");
+          return;
+        }
+
+        const file = document.getElementById("generalMap").files[0];
+        if (!file) {
+          setFormStatus(worldMapForm, "Elige una imagen antes de guardar.");
+          return;
+        }
+
+        await supabaseClient
+          .from("book_world_maps")
+          .delete()
+          .eq("book_slug", book);
+
+        const { error } = await supabaseClient.from("book_world_maps").insert({
+          book_slug: book,
+          map_data: await readPhotoAsCompressedBase64(file)
+        });
+
+        if (error) {
+          setFormStatus(worldMapForm, "No se ha podido guardar: " + error.message);
+          return;
+        }
+
+        worldMapForm.reset();
+        setFormStatus(worldMapForm, "mapa guardado.");
+        showGeneralMap();
+      } catch (error) {
+        setFormStatus(worldMapForm, "No se ha podido guardar: " + error.message);
+      }
+    });
+  }
+
   async function showKingdoms() {
     if (!kingdomsContainer || hideKingdoms) {
       return;
@@ -620,15 +695,6 @@ async function initWorldPage() {
     }
 
     kingdomsContainer.innerHTML = "";
-
-    if (mapGallery) {
-      mapGallery.innerHTML = "";
-      addImages(mapGallery, data.map(item => ({
-        src: item.map_data,
-        alt: `mapa de ${item.name}`,
-        className: "world-map-image"
-      })));
-    }
 
     if (!data.length) {
       showMessage(kingdomsContainer, "Todavía no hay reinos.");
@@ -811,6 +877,7 @@ async function initWorldPage() {
     });
   }
 
+  showGeneralMap();
   showKingdoms();
   showWorldIndex();
 }

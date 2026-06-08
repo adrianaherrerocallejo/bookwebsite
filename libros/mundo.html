@@ -23,7 +23,11 @@
           Espacio para reunir la geografía visual de la saga: mapas generales,
           mapas de reinos y lugares importantes.
         </p>
-        <div id="world-map-gallery" class="world-map-gallery"></div>
+        <form id="world-map-form" class="review-form admin-only world-map-form">
+          <label for="generalMap">subir mapa general</label>
+          <input type="file" id="generalMap" accept="image/*">
+          <button type="submit">guardar mapa</button>
+        </form>        <div id="world-map-gallery" class="world-map-gallery"></div>
       </section>
 
       <section id="world-index">
