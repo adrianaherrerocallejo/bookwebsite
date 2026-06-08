@@ -4,6 +4,7 @@
 
 - admin.js
 - 404.html
+- escritos.html
 - filosofia.html
 - footer.html
 - footer.js
