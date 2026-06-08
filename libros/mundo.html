@@ -18,7 +18,7 @@
 
     <main>
       <section class="card world-map-card">
-        <h2>mapa</h2>
+        <h2>mapa general</h2>
         <p>
           Espacio para reunir la geografía visual de la saga: mapas generales,
           mapas de reinos y lugares importantes.
@@ -26,108 +26,107 @@
         <div id="world-map-gallery" class="world-map-gallery"></div>
       </section>
 
-      <section class="home-grid world-choice-grid">
-        <a class="home-card" id="kingdoms-link" href="#reinos">
-          <h2>reinos</h2>
-          <p>Reinos en orden, con bandera, mapa, capital, cultura, religión e historia.</p>
-        </a>
+      <section class="world-tabs" aria-label="secciones de mundo">
+        <div class="world-tab-list">
+          <button class="world-tab-button active kingdoms-section" type="button" data-world-tab="reinos">reinos</button>
+          <button class="world-tab-button" type="button" data-world-tab="lugares">lugares</button>
+        </div>
 
-        <a class="home-card" href="#lugares">
-          <h2>lugares</h2>
-          <p>Lugares importantes, fotos, reino al que pertenecen e información extra.</p>
-        </a>
-      </section>
+        <section class="world-tab-panel active kingdoms-section" id="panel-reinos" data-world-panel="reinos">
+          <section class="card admin-only" id="nuevo-reino">
+            <h2>nuevo reino</h2>
 
-      <section class="card admin-only kingdoms-section" id="nuevo-reino">
-        <h2>nuevo reino</h2>
+            <form id="kingdom-form" class="review-form">
+              <label for="kingdomName">nombre</label>
+              <input type="text" id="kingdomName" required>
 
-        <form id="kingdom-form" class="review-form">
-          <label for="kingdomName">nombre</label>
-          <input type="text" id="kingdomName" required>
+              <label for="kingdomOrder">orden</label>
+              <input type="number" id="kingdomOrder" min="1" placeholder="1, 2, 3...">
 
-          <label for="kingdomOrder">orden</label>
-          <input type="number" id="kingdomOrder" min="1" placeholder="1, 2, 3...">
+              <label for="flag">bandera</label>
+              <input type="file" id="flag" accept="image/*">
 
-          <label for="flag">bandera</label>
-          <input type="file" id="flag" accept="image/*">
+              <label for="map">mapa</label>
+              <input type="file" id="map" accept="image/*">
 
-          <label for="map">mapa</label>
-          <input type="file" id="map" accept="image/*">
+              <label for="capital">capital</label>
+              <input type="text" id="capital">
 
-          <label for="capital">capital</label>
-          <input type="text" id="capital">
+              <label for="languages">idioma/s</label>
+              <input type="text" id="languages">
 
-          <label for="languages">idioma/s</label>
-          <input type="text" id="languages">
+              <label for="culture">cultura</label>
+              <textarea id="culture"></textarea>
 
-          <label for="culture">cultura</label>
-          <textarea id="culture"></textarea>
+              <label for="religion">religión</label>
+              <textarea id="religion"></textarea>
 
-          <label for="religion">religión</label>
-          <textarea id="religion"></textarea>
+              <label for="history">historia</label>
+              <textarea id="history"></textarea>
 
-          <label for="history">historia</label>
-          <textarea id="history"></textarea>
+              <label for="government">gobernante / familia real</label>
+              <input type="text" id="government">
 
-          <label for="government">gobernante / familia real</label>
-          <input type="text" id="government">
+              <label for="kingdomType">tipo de reino</label>
+              <input type="text" id="kingdomType" placeholder="imperio, reino costero, ciudad-estado...">
 
-          <label for="kingdomType">tipo de reino</label>
-          <input type="text" id="kingdomType" placeholder="imperio, reino costero, ciudad-estado...">
+              <label for="alliances">alianzas</label>
+              <textarea id="alliances"></textarea>
 
-          <label for="alliances">alianzas</label>
-          <textarea id="alliances"></textarea>
+              <label for="enemies">enemigos</label>
+              <textarea id="enemies"></textarea>
 
-          <label for="enemies">enemigos</label>
-          <textarea id="enemies"></textarea>
+              <label for="exploredInBook">libro en el que se explora</label>
+              <input type="text" id="exploredInBook">
 
-          <label for="exploredInBook">libro en el que se explora</label>
-          <input type="text" id="exploredInBook">
+              <label for="kingdomExtra">info extra</label>
+              <textarea id="kingdomExtra"></textarea>
 
-          <label for="kingdomExtra">info extra</label>
-          <textarea id="kingdomExtra"></textarea>
+              <button type="submit">guardar reino</button>
+            </form>
+          </section>
 
-          <button type="submit">guardar reino</button>
-        </form>
-      </section>
+          <section class="card" id="reinos">
+            <h2>reinos</h2>
+            <div id="kingdoms"></div>
+          </section>
+        </section>
 
-      <section class="card kingdoms-section" id="reinos">
-        <h2>reinos</h2>
-        <div id="kingdoms"></div>
-      </section>
+        <section class="world-tab-panel" id="panel-lugares" data-world-panel="lugares">
+          <section class="card admin-only" id="nuevo-lugar">
+            <h2>nuevo lugar</h2>
 
-      <section class="card admin-only" id="nuevo-lugar">
-        <h2>nuevo lugar</h2>
+            <form id="place-form" class="review-form">
+              <label for="placeName">nombre</label>
+              <input type="text" id="placeName" required>
 
-        <form id="place-form" class="review-form">
-          <label for="placeName">nombre</label>
-          <input type="text" id="placeName" required>
+              <label for="placePhoto">foto</label>
+              <input type="file" id="placePhoto" accept="image/*">
 
-          <label for="placePhoto">foto</label>
-          <input type="file" id="placePhoto" accept="image/*">
+              <label for="placeKingdom">reino al que pertenece</label>
+              <input type="text" id="placeKingdom">
 
-          <label for="placeKingdom">reino al que pertenece</label>
-          <input type="text" id="placeKingdom">
+              <label for="placeBook">libro en el que aparece</label>
+              <input type="text" id="placeBook">
 
-          <label for="placeBook">libro en el que aparece</label>
-          <input type="text" id="placeBook">
+              <label for="placeType">tipo de lugar</label>
+              <input type="text" id="placeType" placeholder="ciudad, bosque, templo, puerto...">
 
-          <label for="placeType">tipo de lugar</label>
-          <input type="text" id="placeType" placeholder="ciudad, bosque, templo, puerto...">
+              <label for="placeImportance">importancia en la historia</label>
+              <textarea id="placeImportance"></textarea>
 
-          <label for="placeImportance">importancia en la historia</label>
-          <textarea id="placeImportance"></textarea>
+              <label for="placeExtra">info extra</label>
+              <textarea id="placeExtra"></textarea>
 
-          <label for="placeExtra">info extra</label>
-          <textarea id="placeExtra"></textarea>
+              <button type="submit">guardar lugar</button>
+            </form>
+          </section>
 
-          <button type="submit">guardar lugar</button>
-        </form>
-      </section>
-
-      <section class="card" id="lugares">
-        <h2>lugares</h2>
-        <div id="places"></div>
+          <section class="card" id="lugares">
+            <h2>lugares</h2>
+            <div id="places"></div>
+          </section>
+        </section>
       </section>
     </main>
 

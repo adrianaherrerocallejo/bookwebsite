@@ -488,6 +488,8 @@ async function initWorldPage() {
   const book = params.get("book") || "sin-saga";
   const prettyBook = book.replaceAll("-", " ");
   const title = document.getElementById("book-title");
+  const tabButtons = Array.from(document.querySelectorAll("[data-world-tab]"));
+  const tabPanels = Array.from(document.querySelectorAll("[data-world-panel]"));
 
   if (title) {
     title.textContent = prettyBook;
@@ -496,10 +498,30 @@ async function initWorldPage() {
   const hideKingdoms = book === "las-memorias-del-fuego";
 
   if (hideKingdoms) {
-    document.querySelectorAll(".kingdoms-section, #kingdoms-link").forEach(element => {
+    document.querySelectorAll(".kingdoms-section").forEach(element => {
       element.style.display = "none";
     });
   }
+
+  function setActiveWorldTab(tabName) {
+    tabButtons.forEach(button => {
+      const isActive = button.dataset.worldTab === tabName;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+
+    tabPanels.forEach(panel => {
+      panel.classList.toggle("active", panel.dataset.worldPanel === tabName);
+    });
+  }
+
+  tabButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      setActiveWorldTab(button.dataset.worldTab);
+    });
+  });
+
+  setActiveWorldTab(hideKingdoms ? "lugares" : "reinos");
 
   function addImages(container, images) {
     images.filter(image => image.src).forEach(imageData => {
