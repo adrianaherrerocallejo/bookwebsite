@@ -4,6 +4,23 @@ function showMessage(container, text) {
   }
 }
 
+function getFormStatus(form) {
+  let status = form.querySelector(".form-status");
+
+  if (!status) {
+    status = document.createElement("p");
+    status.className = "form-status";
+    form.appendChild(status);
+  }
+
+  return status;
+}
+
+function setFormStatus(form, text) {
+  const status = getFormStatus(form);
+  status.textContent = text;
+}
+
 async function requireSession() {
   const { data, error } = await supabaseClient.auth.getSession();
   if (error) {
@@ -21,6 +38,38 @@ function readPhotoAsBase64(file) {
 
     const reader = new FileReader();
     reader.onload = event => resolve(event.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+function readPhotoAsCompressedBase64(file) {
+  return new Promise(resolve => {
+    if (!file) {
+      resolve("");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = event => {
+      const image = new Image();
+
+      image.onload = () => {
+        const maxSize = 1200;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+
+      image.onerror = () => resolve(event.target.result);
+      image.src = event.target.result;
+    };
+
     reader.readAsDataURL(file);
   });
 }
@@ -396,22 +445,29 @@ async function initBookItems(config) {
   form.addEventListener("submit", async event => {
     event.preventDefault();
 
-    const session = await requireSession();
-    if (!session) {
-      alert("Tienes que entrar en login para guardar.");
-      return;
+    try {
+      setFormStatus(form, "guardando...");
+
+      const session = await requireSession();
+      if (!session) {
+        setFormStatus(form, "Tienes que entrar en login para guardar.");
+        return;
+      }
+
+      const payload = await config.payload(book);
+      const { error } = await supabaseClient.from(config.table).insert(payload);
+
+      if (error) {
+        setFormStatus(form, "No se ha podido guardar: " + error.message);
+        return;
+      }
+
+      form.reset();
+      setFormStatus(form, "guardado.");
+      showItems();
+    } catch (error) {
+      setFormStatus(form, "No se ha podido guardar: " + error.message);
     }
-
-    const payload = await config.payload(book);
-    const { error } = await supabaseClient.from(config.table).insert(payload);
-
-    if (error) {
-      alert("No se ha podido guardar: " + error.message);
-      return;
-    }
-
-    form.reset();
-    showItems();
   });
 
   showItems();
@@ -546,7 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
       talents: document.getElementById("talents").value,
       weaknesses: document.getElementById("weaknesses").value,
       description: document.getElementById("description").value,
-      photo_data: await readPhotoAsBase64(document.getElementById("photo").files[0])
+      photo_data: await readPhotoAsCompressedBase64(document.getElementById("photo").files[0])
     }),
     render: renderCharacter
   });
@@ -562,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
       book_name: document.getElementById("bookName").value,
       description: document.getElementById("description").value,
       notes: document.getElementById("notes").value,
-      photo_data: await readPhotoAsBase64(document.getElementById("photo").files[0])
+      photo_data: await readPhotoAsCompressedBase64(document.getElementById("photo").files[0])
     }),
     render: renderPlace
   });
