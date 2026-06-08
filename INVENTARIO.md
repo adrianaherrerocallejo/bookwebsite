@@ -27,7 +27,10 @@
 ## libros/
 
 - corazon-de-piedra.html
+- el-origen-del-fin.html
+- hilos-del-tiempo.html
 - las-huellas-del-pasado.html
+- las-memorias-del-fuego.html
 - mundo.html
 - personajes.html
 - sinopsis.html

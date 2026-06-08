@@ -197,6 +197,10 @@ footer {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.saga-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .book-card {
   min-height: 280px;
 }
@@ -210,6 +214,59 @@ footer {
 
 .book-intro {
   margin-bottom: 34px;
+}
+
+.saga-books {
+  margin-top: 36px;
+}
+
+.book-list {
+  display: grid;
+  gap: 16px;
+}
+
+.book-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: 18px;
+  color: #43525a;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(150, 170, 180, 0.24);
+  border-radius: 18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-row:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(120, 140, 160, 0.18);
+}
+
+.book-row span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(91, 124, 119, 0.78);
+  font-size: 20px;
+}
+
+.book-row h3 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: normal;
+  color: #5b7c77;
+}
+
+.book-row p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .book-intro a,
@@ -231,10 +288,18 @@ footer {
   .home-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .saga-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 650px) {
   .home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .book-row {
     grid-template-columns: 1fr;
   }
 
