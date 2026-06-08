@@ -201,6 +201,11 @@ footer {
   min-height: 280px;
 }
 
+.secondary-card {
+  margin-top: 28px;
+  min-height: 0;
+}
+
 .book-intro {
   margin-bottom: 34px;
 }
