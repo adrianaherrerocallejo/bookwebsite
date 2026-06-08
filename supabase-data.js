@@ -1111,6 +1111,30 @@ function textBlock(parts) {
     .join("\n\n");
 }
 
+function createFieldGrid(parts) {
+  const grid = document.createElement("div");
+  grid.className = "character-field-grid";
+
+  parts
+    .filter(([, value]) => value && value.trim())
+    .forEach(([label, value]) => {
+      const field = document.createElement("section");
+      field.className = "character-field";
+
+      const heading = document.createElement("h4");
+      heading.textContent = label;
+
+      const text = document.createElement("p");
+      text.textContent = value;
+
+      field.appendChild(heading);
+      field.appendChild(text);
+      grid.appendChild(field);
+    });
+
+  return grid;
+}
+
 function renderCharacter(item, prettyBook, refresh, startEdit) {
   const article = document.createElement("article");
   article.className = "review-entry";
@@ -1128,19 +1152,17 @@ function renderCharacter(item, prettyBook, refresh, startEdit) {
 
   const meta = document.createElement("p");
   meta.className = "review-meta";
-  const metaParts = [
-    item.role_in_story,
-    item.birth,
-    item.mbti,
-    item.favorite_color ? `color: ${item.favorite_color}` : "",
-    item.favorite_food ? `comida: ${item.favorite_food}` : ""
-  ].filter(Boolean);
-  meta.textContent = metaParts.join(" · ");
+  meta.textContent = [
+    item.birth ? `fecha: ${item.birth}` : "",
+    item.mbti ? `personalidad: ${item.mbti}` : "",
+    item.role_in_story
+  ].filter(Boolean).join(" · ");
 
-  const text = document.createElement("p");
-  text.className = "review-text";
-  text.textContent = textBlock([
+  const fields = createFieldGrid([
+    ["Papel en la historia", item.role_in_story],
     ["Apodo", item.nickname],
+    ["Color favorito", item.favorite_color],
+    ["Comida favorita", item.favorite_food],
     ["Gustos", item.likes],
     ["Mascota", item.pet],
     ["Cosas que detesta", item.hates],
@@ -1164,8 +1186,8 @@ function renderCharacter(item, prettyBook, refresh, startEdit) {
   if (meta.textContent) {
     article.appendChild(meta);
   }
-  if (text.textContent) {
-    article.appendChild(text);
+  if (fields.children.length) {
+    article.appendChild(fields);
   }
   article.appendChild(editButton);
   article.appendChild(button);
